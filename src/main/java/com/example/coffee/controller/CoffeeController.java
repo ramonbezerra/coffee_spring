@@ -1,8 +1,11 @@
-package com.example.coffee;
+package com.example.coffee.controller;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import com.example.coffee.model.Coffee;
+import com.example.coffee.repository.CoffeeRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,14 +17,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-
-
 
 @RestController
 @RequestMapping("/coffees")
+@Api(value = "Coffee")
 public class CoffeeController {
     private List<Coffee> coffees = new ArrayList<>();
 
@@ -38,14 +43,16 @@ public class CoffeeController {
     private CoffeeRepository coffeeRepository;
 
     // @RequestMapping(value = "/coffees", method = RequestMethod.GET)
+    @ApiOperation(value = "Busca uma lista de todos os cafés")
     @GetMapping
     public Iterable<Coffee> getCoffees() {
         return coffeeRepository.findAll();
     }
 
+    @ApiOperation(value = "Busca um café pelo seu identificador")
     @GetMapping("/{id}")
     @ResponseBody
-    public ResponseEntity<Coffee> getMethodName(@PathVariable String id) {
+    public ResponseEntity<Coffee> getCoffeeById(@PathVariable String id) {
         Optional<Coffee> coffee = coffeeRepository.findById(Long.parseLong(id));
         
         if (coffee.isEmpty())

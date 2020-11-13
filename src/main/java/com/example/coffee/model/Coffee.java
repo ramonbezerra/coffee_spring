@@ -1,4 +1,4 @@
-package com.example.coffee;
+package com.example.coffee.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
