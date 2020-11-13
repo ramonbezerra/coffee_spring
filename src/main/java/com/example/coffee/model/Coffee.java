@@ -18,7 +18,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @EqualsAndHashCode
 @ToString
-@Entity
+@Entity(name = "coffee")
 @Table(name = "coffee")
 public class Coffee {
     

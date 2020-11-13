@@ -1,4 +1,4 @@
-package com.example.coffee.swagger;
+package com.example.coffee.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
