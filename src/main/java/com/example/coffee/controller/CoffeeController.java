@@ -1,92 +1,74 @@
 package com.example.coffee.controller;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import com.example.coffee.model.Coffee;
-import com.example.coffee.repository.CoffeeRepository;
+import javax.validation.Valid;
+
+import com.example.coffee.dto.CoffeeDTO;
+import com.example.coffee.exception.CoffeeAlreadyRegisteredException;
+import com.example.coffee.exception.CoffeeNotFoundException;
+import com.example.coffee.service.CoffeeService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import lombok.AllArgsConstructor;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/coffees")
+@RequestMapping("/api/v1/coffees")
 @Api(value = "Coffee")
+@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class CoffeeController {
-    private List<Coffee> coffees = new ArrayList<>();
-
-    public CoffeeController() {
-        coffees.addAll(List.of(
-            new Coffee("Café Expresso"),
-            new Coffee("Café Com Leite"),
-            new Coffee("Café Pingado"),
-            new Coffee("Café Capuccino")
-        ));
-    }
-
-    @Autowired
-    private CoffeeRepository coffeeRepository;
-
-    // @RequestMapping(value = "/coffees", method = RequestMethod.GET)
-    @ApiOperation(value = "Busca uma lista de todos os cafés")
+    
+    private final CoffeeService coffeeService;
+    
     @GetMapping
-    public Iterable<Coffee> getCoffees() {
-        return coffeeRepository.findAll();
+    @ApiOperation(value = "Busca uma lista de todos os cafés")
+    public List<CoffeeDTO> getCoffees() {
+        return coffeeService.listAll();
     }
 
-    @ApiOperation(value = "Busca um café pelo seu identificador")
     @GetMapping("/{id}")
-    @ResponseBody
-    public ResponseEntity<Coffee> getCoffeeById(@PathVariable String id) {
-        Optional<Coffee> coffee = coffeeRepository.findById(Long.parseLong(id));
-        
-        if (coffee.isEmpty())
-            return ResponseEntity.notFound().build();
-        
-        return ResponseEntity.ok(coffee.get());
-    }    
+    @ApiOperation(value = "Busca um café pelo seu identificador")
+    public CoffeeDTO getCoffeeById(@PathVariable String id) throws CoffeeNotFoundException {
+        return coffeeService.findById(Long.parseLong(id));
+    }
+    
+    // todo implementar busca @RequestParam(value="name") String name
+    // @GetMapping("/{name}")
+    // @ApiOperation(value = "Busca um café pelo seu identificador")
+    // public CoffeeDTO getCoffeeByName(@PathVariable String name) throws CoffeeNotFoundException {
+    //     return coffeeService.findByName(name);
+    // }
 
     @PostMapping
-    @ResponseBody
-    public ResponseEntity<Coffee> postCoffee(@RequestBody Coffee coffee) {
-        // coffees.add(coffee);
-        try {
-            return ResponseEntity.ok(coffeeRepository.save(coffee));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-        
+    @ResponseStatus(HttpStatus.CREATED)
+    @ApiOperation(value = "Cria um novo café")
+    public CoffeeDTO postCoffee(@RequestBody @Valid CoffeeDTO coffeeDTO) throws CoffeeAlreadyRegisteredException {
+        return coffeeService.create(coffeeDTO);        
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Coffee> putCoffee(@PathVariable String id, @RequestBody Coffee coffee) {
-        try {
-            return ResponseEntity.ok(coffeeRepository.save(coffee));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public CoffeeDTO putCoffee(@PathVariable String id, @RequestBody @Valid CoffeeDTO coffeeDTO) throws CoffeeNotFoundException, CoffeeAlreadyRegisteredException {
+        return coffeeService.update(Long.parseLong(id), coffeeDTO);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCoffee(@PathVariable Long id) {
-        coffeeRepository.delete(coffeeRepository.findById(id).get());
-        return ResponseEntity.noContent().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCoffee(@PathVariable String id) throws CoffeeNotFoundException {
+        coffeeService.deleteById(Long.parseLong(id));
     }
 }
